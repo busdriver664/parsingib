@@ -1,10 +1,12 @@
-import urllib.request
-from bs4 import BeautifulSoup  
+import urllib.request as ulib
+from urllib.parse import quote
+from bs4 import BeautifulSoup 
+import argparse 
 import re
 
 
 def get_html(url):#получаем страницу целиком
-    response = urllib.request.urlopen(url)
+    response = ulib.urlopen(url)
     return response.read()
 
 def get_nubm(url):# получаем количество страниц с вакансиями
@@ -41,6 +43,8 @@ def parse_vac(html):
     organization = (soup.find("a",attrs={'itemprop': 'hiringOrganization'})).get_text()# график
     description = soup.find("div",attrs={'class': 'g-user-content'})# описание
     demands = parse_demands(html)
+
+
     print("Название вакансии:",name,"\nЗарплата:",salary,"\nТребуемый опыт:",exp,"\nЗанятость:",employment,"\nРабочие часы:",schedule,"\nОрганизация:",organization)
     print("\nТребования:\n", demands, "\n")
 
@@ -76,9 +80,14 @@ def parse_demands(vac):#парсинг требований
 
 
 
+mode = argparse.ArgumentParser(description='find vacancy by name')
+mode.add_argument("--name", dest="name",default="информационная безопасность", type=str, help="add name here")
+args=mode.parse_args()
+
+
 
 vacs = []# все вакансии на сайте
-url = "https://omsk.hh.ru/search/vacancy?text=%D0%98%D0%BD%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D0%B0%D1%8F+%D0%B1%D0%B5%D0%B7%D0%BE%D0%BF%D0%B0%D1%81%D0%BD%D0%BE%D1%81%D1%82%D1%8C&enable_snippets=true&clusters=true&area=68&page="# url страницы с вакнсиями
+url = "https://omsk.hh.ru/search/vacancy?text={}&enable_snippets=true&clusters=true&area=68&page=".format(quote(args.name))# url страницы с вакнсиями
 url1 = "https://omsk.hh.ru/vacancy/"# страница конкретной вакансии
 for i in range(get_nubm(url+"0")):#
     html = get_html(url+str(i))
